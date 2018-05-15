@@ -1,0 +1,61 @@
+require "rubygems"
+require "fileutils"
+require "ffi"
+
+# Copied fom mkmf
+def find_executable(bin, path = nil)
+  executable_file = proc do |name|
+    begin
+      stat = File.stat(name)
+    rescue SystemCallError
+    else
+      next name if stat.file? and stat.executable?
+    end
+  end
+
+  if File.expand_path(bin) == bin
+    return bin if executable_file.call(bin)
+    return nil
+  end
+  path = %w[/usr/local/bin /usr/ucb /usr/bin /bin]
+  if additional_path ||= ENV['PATH']
+    path += additional_path.split(File::PATH_SEPARATOR)
+  end
+  file = nil
+  path.each do |dir|
+    return file if executable_file.call(file = File.join(dir, bin))
+  end
+  nil
+end
+
+def sys(cmd)
+  puts " -- #{cmd}"
+  unless ret = system(cmd)
+    raise "ERROR: '#{cmd}' failed"
+  end
+  ret
+end
+
+desc "Build the fasttext shared lib"
+task :compile_fasttext do
+  # Do not attempt to install if we want to use the system fasttext lib
+  next if ENV.key?("FASTTEXT_USE_SYSTEM_LIB")
+
+  if !find_executable("g++")
+    abort "ERROR: g++ is required to build ffi-fasttext"
+  end
+
+  CWD = ::File.expand_path(::File.dirname(__FILE__))
+  FASTTEXT_DIR = ::File.join(CWD, "..", "..", "..", "vendor", "fasttext")
+
+  ::Dir.chdir(FASTTEXT_DIR) do
+    sys("g++ -c -Wall -Wextra -O3 -std=c++11 -fPIC ./ffi_fasttext.cc")
+    sys("g++ -shared -o libfasttext.#{::FFI::Platform::LIBSUFFIX} ffi_fasttext.o")
+  end
+
+  unless ::File.exist?(::File.join(FASTTEXT_DIR, "libfasttext.#{::FFI::Platform::LIBSUFFIX}"))
+    abort "ERROR: Failed to build fasttext"
+  end
+end
+
+task :default => :compile_fasttext

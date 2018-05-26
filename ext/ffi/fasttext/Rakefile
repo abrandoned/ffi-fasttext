@@ -49,8 +49,16 @@ task :compile_fasttext do
   FASTTEXT_DIR = ::File.join(CWD, "..", "..", "..", "vendor", "fasttext")
 
   ::Dir.chdir(FASTTEXT_DIR) do
-    sys("g++ -c -Wall -Wextra -O3 -std=c++11 -fPIC ./ffi_fasttext.cc")
-    sys("g++ -shared -o libfasttext.#{::FFI::Platform::LIBSUFFIX} ffi_fasttext.o")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c args.cc")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c dictionary.cc")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c productquantizer.cc")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c matrix.cc")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c qmatrix.cc")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c vector.cc")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c model.cc")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c utils.cc")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c fasttext.cc")
+    sys("g++ -fPIC -pthread -std=c++0x args.o dictionary.o productquantizer.o matrix.o qmatrix.o vector.o model.o utils.o fasttext.o -shared -o libfasttext.#{::FFI::Platform::LIBSUFFIX}")
   end
 
   unless ::File.exist?(::File.join(FASTTEXT_DIR, "libfasttext.#{::FFI::Platform::LIBSUFFIX}"))

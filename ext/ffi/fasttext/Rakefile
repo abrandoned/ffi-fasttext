@@ -58,7 +58,8 @@ task :compile_fasttext do
     sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c model.cc")
     sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c utils.cc")
     sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c fasttext.cc")
-    sys("g++ -fPIC -pthread -std=c++0x args.o dictionary.o productquantizer.o matrix.o qmatrix.o vector.o model.o utils.o fasttext.o -shared -o libfasttext.#{::FFI::Platform::LIBSUFFIX}")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c ffi_fasttext.cc")
+    sys("g++ -fPIC -pthread -std=c++0x args.o dictionary.o productquantizer.o matrix.o qmatrix.o vector.o model.o utils.o fasttext.o ffi_fasttext.o -shared -o libfasttext.#{::FFI::Platform::LIBSUFFIX}")
   end
 
   unless ::File.exist?(::File.join(FASTTEXT_DIR, "libfasttext.#{::FFI::Platform::LIBSUFFIX}"))

@@ -21,7 +21,7 @@
 
 EXTERN_C_BEGIN
 fasttext::FastText* create(const char* model_name) {
-  fasttext::FastText* new_fasttext = new fasttext::Fasttext();
+  fasttext::FastText* new_fasttext = new fasttext::FastText();
   new_fasttext->loadModel(std::string(model_name));
 
   return new_fasttext;
@@ -44,7 +44,7 @@ const char* predict(fasttext::FastText* fasttext_pointer, const char* key, int32
   key_stream.str(string_key);
   key_stream << std::endl;
 
-  std::vector<std::pair<real, std::string>> predictions;
+  std::vector<std::pair<fasttext::real, std::string>> predictions;
   fasttext_pointer->predict(key_stream, number_of_predictions, predictions);
 
   for (auto iter = predictions.begin(); iter != predictions.end(); iter++) {

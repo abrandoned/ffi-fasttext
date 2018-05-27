@@ -50,8 +50,10 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/ffi-fasttext.
+Bug reports and pull requests are welcome on GitHub at https://github.com/abrandoned/ffi-fasttext
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT)
+The original source is licensed per Facebook under the terms of the [BSD License](https://github.com/abrandoned/ffi-fasttext/blob/master/vendor/fasttext/LICENSE)
+Along with a Patent License from Facebook [Patents](https://github.com/abrandoned/ffi-fasttext/blob/master/vendor/fasttext/PATENTS)

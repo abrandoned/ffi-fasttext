@@ -49,17 +49,17 @@ task :compile_fasttext do
   FASTTEXT_DIR = ::File.join(CWD, "..", "..", "..", "vendor", "fasttext")
 
   ::Dir.chdir(FASTTEXT_DIR) do
-    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c args.cc")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c dictionary.cc")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c productquantizer.cc")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c matrix.cc")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c qmatrix.cc")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c vector.cc")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c model.cc")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c utils.cc")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c fasttext.cc")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c args.cc") unless ::File.exist?("args.o")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c dictionary.cc") unless ::File.exist?("dictionary.o")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c productquantizer.cc") unless ::File.exist?("productquantizer.o")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c matrix.cc") unless ::File.exist?("matrix.o")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c qmatrix.cc") unless ::File.exist?("qmatrix.o")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c vector.cc") unless ::File.exist?("vector.o")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c model.cc") unless ::File.exist?("model.o")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c utils.cc") unless ::File.exist?("utils.o")
+    sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c fasttext.cc") unless ::File.exist?("fasttext.o")
     sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c ffi_fasttext.cc")
-    sys("g++ -fPIC -pthread -std=c++0x args.o dictionary.o productquantizer.o matrix.o qmatrix.o vector.o model.o utils.o fasttext.o main.cc -o fasttext")
+    sys("g++ -fPIC -pthread -std=c++0x args.o dictionary.o productquantizer.o matrix.o qmatrix.o vector.o model.o utils.o fasttext.o main.cc -o fasttext") unless ::File.exist?("fasttext")
     sys("g++ -fPIC -pthread -std=c++0x args.o dictionary.o productquantizer.o matrix.o qmatrix.o vector.o model.o utils.o fasttext.o ffi_fasttext.o -shared -o libfasttext.#{::FFI::Platform::LIBSUFFIX}")
   end
 

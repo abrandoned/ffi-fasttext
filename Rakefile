@@ -9,11 +9,11 @@ namespace :fasttext do
   end
 end
 
-Rake::TestTask.new(:test) do |t|
-  t.libs << "test"
+Rake::TestTask.new(:spec) do |t|
+  t.libs << "spec"
   t.libs << "lib"
-  t.test_files = FileList["test/**/*_test.rb"]
+  t.test_files = FileList["spec/**/*_spec.rb"]
 end
-Rake::Task[:test].prerequisites << "fasttext:compile"
+Rake::Task[:spec].prerequisites << "fasttext:compile"
 
-task :default => :test
+task :default => :spec

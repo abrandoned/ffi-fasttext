@@ -1,8 +1,10 @@
 # FFI::Fasttext
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/ffi/fasttext`. To experiment with that code, run `bin/console` for an interactive prompt.
+FFI bindings for [Fasttext](https://fasttext.cc/)
 
-TODO: Delete this and the text above, and describe your gem
+If you aren't sure what Fasttext is then read the information provided at the site above or the facebook github profile for the source of the fasttext C++ code [Github:Fasttext](https://github.com/facebookresearch/fastText/)
+
+The FFI bindings are only for using Fasttext predictions in a ruby process after a model has been trained in the console. The model.bin/model.vec files are required to use the prediction probabilities through the `#predict` method of a `::FFI::Fasttext::Predictor` object.
 
 ## Installation
 
@@ -22,11 +24,27 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Requires `g++` to be installed as it uses the C++ compiler to build the shared object that FFI uses and the executable unless other configuration options for access to the shared object are provided.
+
+The Fasttext C++ model loading code will error out (and cause a hard `exit`) if the wrong model file is used or the model file is not at the specified filename. (so make sure you use the \*.bin file in the initialization)
+
+There is a test training set and model in the spec directory, which should not be relied on for any predictability as it is abbreviated and all trained on "derp" derivations.
+
+```ruby
+require "ffi/fasttext"
+
+ft = ::FFI::Fasttext::Predictor.new("spec/model.bin")
+
+ft.predict("derp") # => [["__label__3", 0.4375]] // will output the highest probability label and the associated probability in an array
+ft.predict("derp", 3) # => [["__label__3", 0.4375], ["__label__1", 0.396484], ["__label__2", 0.164063]] // will output the top 3 probabilities in an array of arrays
+ft.predict("derp", 10) # => [["__label__3", 0.4375], ["__label__1", 0.396484], ["__label__2", 0.164063]] // output the same as above as there are only 3 categories or if probability < 0
+
+ft.destroy! # The prediction model is dynamically allocated in C code and must be released
+```
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 

@@ -39,7 +39,7 @@ end
 desc "Build the fasttext shared lib"
 task :compile_fasttext do
   # Do not attempt to install if we want to use the system fasttext lib
-  next if ENV.key?("FASTTEXT_USE_SYSTEM_LIB")
+  next if ENV.key?("FASTTEXT_USE_SYSTEM_LIB") || ENV.key?("SKIP_FASTTEXT_COMPILE")
 
   if !find_executable("g++")
     abort "ERROR: g++ is required to build ffi-fasttext"

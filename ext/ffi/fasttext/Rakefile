@@ -59,6 +59,7 @@ task :compile_fasttext do
     sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c utils.cc")
     sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c fasttext.cc")
     sys("g++ -c -O3 -fPIC -pthread -std=c++0x -c ffi_fasttext.cc")
+    sys("g++ -fPIC -pthread -std=c++0x args.o dictionary.o productquantizer.o matrix.o qmatrix.o vector.o model.o utils.o fasttext.o main.cc -o fasttext")
     sys("g++ -fPIC -pthread -std=c++0x args.o dictionary.o productquantizer.o matrix.o qmatrix.o vector.o model.o utils.o fasttext.o ffi_fasttext.o -shared -o libfasttext.#{::FFI::Platform::LIBSUFFIX}")
   end
 

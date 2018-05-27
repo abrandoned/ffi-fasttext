@@ -78,8 +78,7 @@ module FFI
 
     class Predictor
       def initialize(model_filename)
-        raise "probs" unless ::File.exist?(model_filename)
-
+        raise "File does not exist" unless ::File.exist?(model_filename)
         @ptr = ::FFI::Fasttext.create(model_filename)
       end
 

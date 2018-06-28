@@ -39,10 +39,10 @@ void predict_string_free(const char* match) {
 
 const char* predict(fasttext::FastText* fasttext_pointer, const char* key, int32_t number_of_predictions) {
   std::string string_key(key);
+  string_key += '\n';
   std::stringstream key_stream;
   std::ostringstream output_stream;
   key_stream.str(string_key);
-  key_stream << std::endl;
 
   std::vector<std::pair<fasttext::real, std::string>> predictions;
   fasttext_pointer->predict(key_stream, number_of_predictions, predictions);

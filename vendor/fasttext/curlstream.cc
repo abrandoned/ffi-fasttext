@@ -70,6 +70,7 @@ int CurlStreambuff::underflow()
   if (xsgetn(&c, 1) < 1) {
     return traits_type::eof();
   }
+  --m_pos;
   return c;
 }
 

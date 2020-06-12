@@ -75,6 +75,17 @@ int CurlStreambuff::underflow()
   return traits_type::to_int_type(m_buffer[m_pos]);
 }
 
+int CurlStreambuff::uflow()
+{
+  char c;
+  if (m_pos >= m_sz) {
+    if (fillbuffer() == 0) {
+      return traits_type::eof();
+    }
+  }
+  return traits_type::to_int_type(m_buffer[m_pos++]);
+}
+
 int CurlStreambuff::writer_callback(char *data, size_t sz, size_t nmemb, void* ptr)
 {
   auto self = static_cast<CurlStreambuff*>(ptr);

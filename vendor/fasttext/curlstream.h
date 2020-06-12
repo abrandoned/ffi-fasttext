@@ -17,6 +17,7 @@ public:
 protected:
   std::streamsize xsgetn(char *s, std::streamsize n) override;
   int underflow() override;
+  int uflow() override;
 
 private:
   static int writer_callback(char *data, size_t sz, size_t nmemb, void* ptr);

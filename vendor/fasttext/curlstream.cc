@@ -46,33 +46,16 @@ CurlStreambuff::~CurlStreambuff()
   }
 }
 
-CurlStreambuff::CurlStreambuff(CurlStreambuff && src)
-{
-  std::swap(m_http_handle, src.m_http_handle);
-  std::swap(m_multi_handle, src.m_multi_handle);
-  std::swap(m_buffer, src.m_buffer);
-  std::swap(m_pos, src.m_pos);
-}
-
-CurlStreambuff& CurlStreambuff::operator = (CurlStreambuff && rhs)
-{
-  std::swap(m_http_handle, rhs.m_http_handle);
-  std::swap(m_multi_handle, rhs.m_multi_handle);
-  std::swap(m_buffer, rhs.m_buffer);
-  std::swap(m_pos, rhs.m_pos);
-  return *this;
-}
-
 std::streamsize CurlStreambuff::xsgetn(char *s, std::streamsize n)
 {
   auto remaining = n;
   while (remaining > 0) {
-    if (m_pos >= m_buffer.size()) {
+    if (m_pos >= m_sz) {
       if (fillbuffer() == 0) {
         break;
       }
     }
-    auto to_copy = std::min<size_t>(remaining, m_buffer.size() - m_pos);
+    auto to_copy = std::min<size_t>(remaining, m_sz - m_pos);
     memcpy(s, &m_buffer[m_pos], to_copy);
     s += to_copy;
     m_pos += to_copy;
@@ -93,19 +76,20 @@ int CurlStreambuff::underflow()
 int CurlStreambuff::writer_callback(char *data, size_t sz, size_t nmemb, void* ptr)
 {
   auto self = static_cast<CurlStreambuff*>(ptr);
-  self->m_buffer.resize(sz * nmemb);
-  if(self->m_buffer.empty()) {
+  auto bytes = sz * nmemb;
+  if(bytes > sizeof(m_buffer) || bytes == 0) {
     return 0;
   }
-  memcpy(&self->m_buffer[0], data, self->m_buffer.size());
+  memcpy(&self->m_buffer[0], data, bytes);
+  self->m_sz = bytes;
   self->m_pos = 0;
-  return sz * nmemb;
+  return bytes;
 }
 
 size_t CurlStreambuff::fillbuffer()
 {
   using namespace std::chrono_literals;
-  m_buffer.clear();
+  m_sz = 0;
   int still_running_count = 0, repeats = 0;
   curl_multi_perform(m_multi_handle, &still_running_count);
   while (still_running_count > 0) {
@@ -125,24 +109,11 @@ size_t CurlStreambuff::fillbuffer()
       if (++repeats > 1) {
         std::this_thread::sleep_for(100ms);
       }
-    } else if (!m_buffer.empty()) {
+    } else if (m_sz > 0) {
       break;
     }
     curl_multi_perform(m_multi_handle, &still_running_count);
   }
-  return m_buffer.size();
-}
-
-int main(int argc, char **argv)
-{
-  CurlStream stream(argc < 2 ? "https://www.example.com" : argv[1]);
-  
-  char buffer[32 + 1];
-  while (!stream.eof()) {
-    stream.read(buffer, 32);
-    buffer[stream.gcount()] = 0;
-    std::cout << buffer;
-  }
-  std::cout << '\n';
+  return m_sz;
 }
 

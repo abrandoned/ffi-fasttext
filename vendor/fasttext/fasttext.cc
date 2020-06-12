@@ -140,15 +140,15 @@ void FastText::loadModel(const std::string& filename) {
     std::cerr << "Model file cannot be opened for loading!" << std::endl;
     exit(EXIT_FAILURE);
   }
-  if (!checkModel(ifs)) {
-    std::cerr << "Model file has wrong file format!" << std::endl;
-    exit(EXIT_FAILURE);
-  }
   loadModel(ifs);
   ifs.close();
 }
 
 void FastText::loadModel(std::istream& in) {
+  if (!checkModel(in)) {
+    std::cerr << "Model file has wrong file format!" << std::endl;
+    exit(EXIT_FAILURE);
+  }
   args_ = std::make_shared<Args>();
   dict_ = std::make_shared<Dictionary>(args_);
   input_ = std::make_shared<Matrix>();

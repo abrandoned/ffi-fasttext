@@ -66,7 +66,6 @@ std::streamsize CurlStreambuff::xsgetn(char *s, std::streamsize n)
 
 int CurlStreambuff::underflow()
 {
-  char c;
   if (m_pos >= m_sz) {
     if (fillbuffer() == 0) {
       return traits_type::eof();
@@ -77,7 +76,6 @@ int CurlStreambuff::underflow()
 
 int CurlStreambuff::uflow()
 {
-  char c;
   if (m_pos >= m_sz) {
     if (fillbuffer() == 0) {
       return traits_type::eof();
@@ -103,15 +101,20 @@ size_t CurlStreambuff::fillbuffer()
 {
   using namespace std::chrono_literals;
   m_sz = 0;
-  int still_running_count = 0, repeats = 0;
-  curl_multi_perform(m_multi_handle, &still_running_count);
+  int still_running_count = 1, repeats = 0;
   while (still_running_count > 0) {
+    auto mc = curl_multi_perform(m_multi_handle, &still_running_count);
+    if (mc != CURLE_OK) {
+      return 0;
+    }
+    if (m_sz > 0) {
+      break;
+    }
     /* wait for activity, timeout or "nothing" */ 
     int numfds;
-    auto mc = curl_multi_wait(m_multi_handle, nullptr, 0, 1000, &numfds);
-
+    mc = curl_multi_wait(m_multi_handle, nullptr, 0, 1000, &numfds);
     if(mc != CURLM_OK) {
-      break;
+      return 0;
     }
 
     /* 'numfds' being zero means either a timeout or no file descriptors to
@@ -122,10 +125,7 @@ size_t CurlStreambuff::fillbuffer()
       if (++repeats > 1) {
         std::this_thread::sleep_for(100ms);
       }
-    } else if (m_sz > 0) {
-      break;
     }
-    curl_multi_perform(m_multi_handle, &still_running_count);
   }
   return m_sz;
 }

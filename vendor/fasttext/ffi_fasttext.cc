@@ -24,12 +24,17 @@ EXTERN_C_BEGIN
 fasttext::FastText* create(const char* model_name) {
   fasttext::FastText* new_fasttext = new fasttext::FastText();
   std::string model{model_name};
-  if (model.substr(0, 4) == "http") {
-    CurlStream curlstream{model};
-    new_fasttext->loadModel(curlstream);
-  } else {
-    new_fasttext->loadModel(model);
-  }
+  try {
+    if (model.substr(0, 4) == "http") {
+      CurlStream curlstream{model};
+      new_fasttext->loadModel(curlstream);
+    } else {
+      new_fasttext->loadModel(model);
+    }
+  } catch(std::exception&) {
+    delete new_fasttext;
+    return nullptr;
+  } 
 
   return new_fasttext;
 }

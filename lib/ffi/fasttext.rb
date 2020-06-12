@@ -80,6 +80,7 @@ module FFI
       def initialize(model_filename)
         raise "File does not exist" unless ::File.exist?(model_filename) || model_filename.start_with?("http")
         @ptr = ::FFI::Fasttext.create(model_filename)
+        raise "Error loading model" if @ptr.nil?
       end
 
       def destroy!

@@ -145,10 +145,9 @@ void FastText::loadModel(const std::string& filename) {
 }
 
 void FastText::loadModel(std::istream& in) {
-  //if (!checkModel(in)) {
-  //  return;//throw std::runtime_error("Model file has wrong file format!");
-  //}
-//char bff[8]; in.read(bff,8);
+  if (!checkModel(in)) {
+    throw std::runtime_error("Model file has wrong file format!");
+  }
   args_ = std::make_shared<Args>();
   dict_ = std::make_shared<Dictionary>(args_);
   input_ = std::make_shared<Matrix>();

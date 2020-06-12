@@ -67,11 +67,12 @@ std::streamsize CurlStreambuff::xsgetn(char *s, std::streamsize n)
 int CurlStreambuff::underflow()
 {
   char c;
-  if (xsgetn(&c, 1) < 1) {
-    return traits_type::eof();
+  if (m_pos >= m_sz) {
+    if (fillbuffer() == 0) {
+      return traits_type::eof();
+    }
   }
-  --m_pos;
-  return c;
+  return traits_type::to_int_type(m_buffer[m_pos]);
 }
 
 int CurlStreambuff::writer_callback(char *data, size_t sz, size_t nmemb, void* ptr)

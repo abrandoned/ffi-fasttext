@@ -25,12 +25,12 @@ fasttext::FastText* create(const char* model_name) {
   fasttext::FastText* new_fasttext = new fasttext::FastText();
   std::string model{model_name};
   if (model.substr(0, 4) == "http") {
-    try {
-      CurlStream curlstream{model};
-      new_fasttext->loadModel(curlstream);
-    } catch(std::length_error &e) {
-      std::cout << "What?!?\n";
-    } 
+    CurlStream curlstream{model};
+    if (!new_fasttext->checkModel(curlstream)) {
+      delete new_fasttext;
+      return nullptr;
+    }
+    new_fasttext->loadModel(curlstream);
   } else {
     new_fasttext->loadModel(model);
   }

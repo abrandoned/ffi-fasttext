@@ -1,5 +1,6 @@
 require "ffi"
 require "ffi/fasttext/version"
+require "uri"
 
 module FFI
   module Fasttext
@@ -72,14 +73,19 @@ module FFI
     end
 
     attach_function :create, [:string], :pointer
+    attach_function :create_from_url, [:string], :pointer
     attach_function :destroy, [:pointer], :void
     attach_function :predict_string_free, [:pointer], :void
     attach_function :predict, [:pointer, :string, :int32_t], :strptr
 
     class Predictor
-      def initialize(model_filename)
-        raise "File does not exist" unless ::File.exist?(model_filename) || model_filename.start_with?("http")
-        @ptr = ::FFI::Fasttext.create(model_filename)
+      def initialize(model_name)
+        if is_url?(model_name)
+          @ptr = ::FFI::Fasttext.create_from_url(model_name)
+        else
+          raise "File does not exist" unless ::File.exist?(model_name)
+          @ptr = ::FFI::Fasttext.create(model_name)
+        end
         raise "Error loading model" if @ptr.null?
       end
 
@@ -103,6 +109,13 @@ module FFI
         response_array
       ensure
         ::FFI::Fasttext.predict_string_free(pointer) unless pointer.nil?
+      end
+
+      def is_url?(string)
+        uri = URI.parse(string)
+        uri.is_a?(URI::HTTP) && !uri.host.nil?
+      rescue URI::InvalidURIError
+        false
       end
     end
   end

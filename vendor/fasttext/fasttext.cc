@@ -43,8 +43,7 @@ void FastText::getVector(Vector& vec, const std::string& word) const {
 void FastText::saveVectors() {
   std::ofstream ofs(args_->output + ".vec");
   if (!ofs.is_open()) {
-    std::cerr << "Error opening file for saving vectors." << std::endl;
-    exit(EXIT_FAILURE);
+    throw std::runtime_error("Error opening file for saving vectors.");
   }
   ofs << dict_->nwords() << " " << args_->dim << std::endl;
   Vector vec(args_->dim);
@@ -59,8 +58,7 @@ void FastText::saveVectors() {
 void FastText::saveOutput() {
   std::ofstream ofs(args_->output + ".output");
   if (!ofs.is_open()) {
-    std::cerr << "Error opening file for saving vectors." << std::endl;
-    exit(EXIT_FAILURE);
+    throw std::runtime_error("Error opening file for saving vectors.");
   }
   if (quant_) {
     std::cerr << "Option -saveOutput is not supported for quantized models."
@@ -110,8 +108,7 @@ void FastText::saveModel() {
   }
   std::ofstream ofs(fn, std::ofstream::binary);
   if (!ofs.is_open()) {
-    std::cerr << "Model file cannot be opened for saving!" << std::endl;
-    exit(EXIT_FAILURE);
+    throw std::runtime_error("Model file cannot be opened for saving!");
   }
   signModel(ofs);
   args_->save(ofs);
@@ -137,18 +134,16 @@ void FastText::saveModel() {
 void FastText::loadModel(const std::string& filename) {
   std::ifstream ifs(filename, std::ifstream::binary);
   if (!ifs.is_open()) {
-    std::cerr << "Model file cannot be opened for loading!" << std::endl;
-    exit(EXIT_FAILURE);
-  }
-  if (!checkModel(ifs)) {
-    std::cerr << "Model file has wrong file format!" << std::endl;
-    exit(EXIT_FAILURE);
+    throw std::runtime_error("Model file cannot be opened for loading!");
   }
   loadModel(ifs);
   ifs.close();
 }
 
 void FastText::loadModel(std::istream& in) {
+  if (!checkModel(in)) {
+    throw std::runtime_error("Model file has wrong file format!");
+  }
   args_ = std::make_shared<Args>();
   dict_ = std::make_shared<Dictionary>(args_);
   input_ = std::make_shared<Matrix>();
@@ -172,10 +167,7 @@ void FastText::loadModel(std::istream& in) {
   }
 
   if (!quant_input && dict_->isPruned()) {
-    std::cerr << "Invalid model file.\n"
-              << "Please download the updated model from www.fasttext.cc.\n"
-              << "See issue #332 on Github for more information.\n";
-    exit(1);
+    throw std::runtime_error("Invalid model file");
   }
 
   in.read((char*) &args_->qout, sizeof(bool));
@@ -228,8 +220,7 @@ std::vector<int32_t> FastText::selectEmbeddings(int32_t cutoff) const {
 
 void FastText::quantize(std::shared_ptr<Args> qargs) {
   if (qargs->output.empty()) {
-    std::cerr<<"No model provided!"<<std::endl;
-    exit(1);
+    throw std::runtime_error("No model provided!");
   }
   loadModel(qargs->output + ".bin");
 
@@ -600,14 +591,11 @@ void FastText::loadVectors(std::string filename) {
   std::shared_ptr<Matrix> mat; // temp. matrix for pretrained vectors
   int64_t n, dim;
   if (!in.is_open()) {
-    std::cerr << "Pretrained vectors file cannot be opened!" << std::endl;
-    exit(EXIT_FAILURE);
+    throw std::runtime_error("Pretrained vectors file cannot be opened!");
   }
   in >> n >> dim;
   if (dim != args_->dim) {
-    std::cerr << "Dimension of pretrained vectors does not match -dim option"
-              << std::endl;
-    exit(EXIT_FAILURE);
+    throw std::runtime_error("Dimension of pretrained vectors does not match -dim option");
   }
   mat = std::make_shared<Matrix>(n, dim);
   for (size_t i = 0; i < n; i++) {
@@ -639,13 +627,11 @@ void FastText::train(std::shared_ptr<Args> args) {
   dict_ = std::make_shared<Dictionary>(args_);
   if (args_->input == "-") {
     // manage expectations
-    std::cerr << "Cannot use stdin for training!" << std::endl;
-    exit(EXIT_FAILURE);
+    throw std::runtime_error("Cannot use stdin for training!");
   }
   std::ifstream ifs(args_->input);
   if (!ifs.is_open()) {
-    std::cerr << "Input file cannot be opened!" << std::endl;
-    exit(EXIT_FAILURE);
+    throw std::runtime_error("Input file cannot be opened!");
   }
   dict_->readFromFile(ifs);
   ifs.close();

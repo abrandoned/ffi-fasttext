@@ -78,8 +78,9 @@ module FFI
 
     class Predictor
       def initialize(model_filename)
-        raise "File does not exist" unless ::File.exist?(model_filename)
+        raise "File does not exist" unless ::File.exist?(model_filename) || model_filename.start_with?("http")
         @ptr = ::FFI::Fasttext.create(model_filename)
+        raise "Error loading model" if @ptr.null?
       end
 
       def destroy!

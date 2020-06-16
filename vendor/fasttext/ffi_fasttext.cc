@@ -8,6 +8,7 @@
 
 #include "real.h"
 #include "fasttext.h"
+#include "curlstream.h"
 
 #ifdef __cplusplus
 #define EXTERN_C       extern "C"
@@ -22,7 +23,18 @@
 EXTERN_C_BEGIN
 fasttext::FastText* create(const char* model_name) {
   fasttext::FastText* new_fasttext = new fasttext::FastText();
-  new_fasttext->loadModel(std::string(model_name));
+  std::string model{model_name};
+  try {
+    if (model.substr(0, 4) == "http") {
+      CurlStream curlstream{model};
+      new_fasttext->loadModel(curlstream);
+    } else {
+      new_fasttext->loadModel(model);
+    }
+  } catch(std::exception&) {
+    delete new_fasttext;
+    return nullptr;
+  } 
 
   return new_fasttext;
 }

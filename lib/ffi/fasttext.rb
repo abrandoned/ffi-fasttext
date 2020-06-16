@@ -1,5 +1,6 @@
 require "ffi"
 require "ffi/fasttext/version"
+require "uri"
 
 module FFI
   module Fasttext
@@ -103,6 +104,13 @@ module FFI
         response_array
       ensure
         ::FFI::Fasttext.predict_string_free(pointer) unless pointer.nil?
+      end
+
+      def is_url?(string)
+        uri = URI.parse(string)
+        uri.is_a?(URI::HTTP) && !uri.host.nil?
+      rescue URI::InvalidURIError
+        false
       end
     end
   end

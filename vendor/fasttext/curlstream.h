@@ -20,13 +20,13 @@ protected:
   int uflow() override;
 
 private:
-  static int writer_callback(char *data, size_t sz, size_t nmemb, void* ptr);
+  static int writer_callback(char *data, size_t size, size_t count, void* ptr);
   size_t fillbuffer();
   
   CURL *m_http_handle = nullptr;
   CURLM *m_multi_handle = nullptr;
   char m_buffer[CURL_MAX_WRITE_SIZE];
-  size_t m_pos = 0, m_sz = 0;
+  size_t m_pos = 0, m_size = 0;
 };
 
 class CurlStream : private CurlStreambuff, public std::istream {

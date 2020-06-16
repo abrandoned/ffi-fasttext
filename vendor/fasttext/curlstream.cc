@@ -50,12 +50,12 @@ std::streamsize CurlStreambuff::xsgetn(char *s, std::streamsize n)
 {
   auto remaining = n;
   while (remaining > 0) {
-    if (m_pos >= m_sz) {
+    if (m_pos >= m_size) {
       if (fillbuffer() == 0) {
         break;
       }
     }
-    auto to_copy = std::min<size_t>(remaining, m_sz - m_pos);
+    auto to_copy = std::min<size_t>(remaining, m_size - m_pos);
     memcpy(s, &m_buffer[m_pos], to_copy);
     s += to_copy;
     m_pos += to_copy;
@@ -66,7 +66,7 @@ std::streamsize CurlStreambuff::xsgetn(char *s, std::streamsize n)
 
 int CurlStreambuff::underflow()
 {
-  if (m_pos >= m_sz) {
+  if (m_pos >= m_size) {
     if (fillbuffer() == 0) {
       return traits_type::eof();
     }
@@ -76,7 +76,7 @@ int CurlStreambuff::underflow()
 
 int CurlStreambuff::uflow()
 {
-  if (m_pos >= m_sz) {
+  if (m_pos >= m_size) {
     if (fillbuffer() == 0) {
       return traits_type::eof();
     }
@@ -84,15 +84,15 @@ int CurlStreambuff::uflow()
   return traits_type::to_int_type(m_buffer[m_pos++]);
 }
 
-int CurlStreambuff::writer_callback(char *data, size_t sz, size_t nmemb, void* ptr)
+int CurlStreambuff::writer_callback(char *data, size_t size, size_t count, void* ptr)
 {
   auto self = static_cast<CurlStreambuff*>(ptr);
-  auto bytes = sz * nmemb;
+  auto bytes = size * count;
   if(bytes > sizeof(m_buffer) || bytes == 0) {
     return 0;
   }
   memcpy(&self->m_buffer[0], data, bytes);
-  self->m_sz = bytes;
+  self->m_size = bytes;
   self->m_pos = 0;
   return bytes;
 }
@@ -100,14 +100,14 @@ int CurlStreambuff::writer_callback(char *data, size_t sz, size_t nmemb, void* p
 size_t CurlStreambuff::fillbuffer()
 {
   using namespace std::chrono_literals;
-  m_sz = 0;
+  m_size = 0;
   int still_running_count = 1, repeats = 0;
   while (still_running_count > 0) {
     auto mc = curl_multi_perform(m_multi_handle, &still_running_count);
     if (mc != CURLE_OK) {
       return 0;
     }
-    if (m_sz > 0) {
+    if (m_size > 0) {
       break;
     }
     /* wait for activity, timeout or "nothing" */ 
@@ -127,6 +127,6 @@ size_t CurlStreambuff::fillbuffer()
       }
     }
   }
-  return m_sz;
+  return m_size;
 }
 

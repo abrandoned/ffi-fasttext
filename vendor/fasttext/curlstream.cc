@@ -104,7 +104,7 @@ size_t CurlStreambuff::fillbuffer()
   int still_running_count = 1, repeats = 0;
   while (still_running_count > 0) {
     auto mc = curl_multi_perform(m_multi_handle, &still_running_count);
-    if (mc != CURLE_OK) {
+    if (mc != CURLM_OK) {
       return 0;
     }
     if (m_size > 0) {

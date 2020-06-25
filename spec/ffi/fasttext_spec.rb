@@ -15,7 +15,7 @@ describe ::FFI::Fasttext::Predictor do
 
     it "will not initialize without valid model file" do
       error = lambda { ::FFI::Fasttext::Predictor.new("derpderp") }.must_raise(RuntimeError)
-      error.message.must_match(/does not exist/i)
+      error.message.must_match(/error loading model/i)
     end
 
     it "will output an array with matches on #predict" do

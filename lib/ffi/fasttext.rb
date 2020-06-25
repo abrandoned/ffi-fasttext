@@ -72,14 +72,14 @@ module FFI
     end
 
     attach_function :create, [:string], :pointer
+    attach_function :create_from_url, [:string], :pointer
     attach_function :destroy, [:pointer], :void
     attach_function :predict_string_free, [:pointer], :void
     attach_function :predict, [:pointer, :string, :int32_t], :strptr
 
     class Predictor
-      def initialize(model_filename)
-        raise "File does not exist" unless ::File.exist?(model_filename) || model_filename.start_with?("http")
-        @ptr = ::FFI::Fasttext.create(model_filename)
+      def initialize(model_name)
+        @ptr = ::File.exist?(model_name) ? ::FFI::Fasttext.create(model_name) : ::FFI::Fasttext.create_from_url(model_name)
         raise "Error loading model" if @ptr.null?
       end
 

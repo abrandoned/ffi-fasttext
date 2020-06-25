@@ -21,20 +21,27 @@
 #endif
 
 EXTERN_C_BEGIN
-fasttext::FastText* create(const char* model_name) {
+fasttext::FastText* create(const char* model_filename) {
   fasttext::FastText* new_fasttext = new fasttext::FastText();
-  std::string model{model_name};
   try {
-    if (model.substr(0, 4) == "http") {
-      CurlStream curlstream{model};
-      new_fasttext->loadModel(curlstream);
-    } else {
-      new_fasttext->loadModel(model);
-    }
+    new_fasttext->loadModel(model_filename);
   } catch(std::exception&) {
     delete new_fasttext;
     return nullptr;
-  } 
+  }
+
+  return new_fasttext;
+}
+
+fasttext::FastText* create_from_url(const char* model_url) {
+  fasttext::FastText* new_fasttext = new fasttext::FastText();
+  try {
+    CurlStream curlstream{model_url};
+    new_fasttext->loadModel(curlstream);
+  } catch(std::exception&) {
+    delete new_fasttext;
+    return nullptr;
+  }
 
   return new_fasttext;
 }

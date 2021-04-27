@@ -79,13 +79,9 @@ module FFI
 
     class Predictor
       def initialize(model_name)
-        @ptr = ::File.exist?(model_name) ? ::FFI::Fasttext.create(model_name) : ::FFI::Fasttext.create_from_url(model_name)
-        raise "Error loading model" if @ptr.null?
-      end
-
-      def destroy!
-        ::FFI::Fasttext.destroy(@ptr) unless @ptr.nil?
-        @ptr = nil
+        fasttext_ptr = ::File.exist?(model_name) ? ::FFI::Fasttext.create(model_name) : ::FFI::Fasttext.create_from_url(model_name)
+        raise "Error loading model" if fasttext_ptr.null?
+        @ptr = ::FFI::AutoPointer.new(fasttext_ptr, ::FFI::Fasttext.method(:destroy))
       end
 
       def predict(string, number_of_predictions = 1)

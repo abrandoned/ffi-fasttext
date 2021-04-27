@@ -38,8 +38,6 @@ ft = ::FFI::Fasttext::Predictor.new("spec/model.bin")
 ft.predict("derp") # => [["__label__3", 0.4375]] // will output the highest probability label and the associated probability in an array
 ft.predict("derp", 3) # => [["__label__3", 0.4375], ["__label__1", 0.396484], ["__label__2", 0.164063]] // will output the top 3 probabilities in an array of arrays
 ft.predict("derp", 10) # => [["__label__3", 0.4375], ["__label__1", 0.396484], ["__label__2", 0.164063]] // output the same as above as there are only 3 categories or if probability < 0
-
-ft.destroy! # The prediction model is dynamically allocated in C code and must be released
 ```
 
 ## Development

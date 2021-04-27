@@ -5,10 +5,6 @@ describe ::FFI::Fasttext::Predictor do
   describe "API" do
     let(:filename) { ::File.join(::File.dirname(__FILE__), "..", "model.bin") }
 
-    it "validates #destroy! present" do
-      ::FFI::Fasttext::Predictor.new(filename).must_respond_to :destroy!
-    end
-
     it "validates #predict present" do
       ::FFI::Fasttext::Predictor.new(filename).must_respond_to :predict
     end

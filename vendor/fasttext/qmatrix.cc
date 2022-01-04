@@ -11,6 +11,7 @@
 
 #include <assert.h>
 #include <iostream>
+#include <memory>
 
 namespace fasttext {
 
@@ -21,29 +22,22 @@ QMatrix::QMatrix(const Matrix& mat, int32_t dsub, bool qnorm)
       : qnorm_(qnorm), m_(mat.m_), n_(mat.n_),
         codesize_(m_ * ((n_ + dsub - 1) / dsub)) {
   if (codesize_ > 0) {
-    codes_ = new uint8_t[codesize_];
+    codes_.resize(codesize_);
   }
-  pq_ = std::unique_ptr<ProductQuantizer>( new ProductQuantizer(n_, dsub));
+  pq_ = std::make_unique<ProductQuantizer>(n_, dsub);
   if (qnorm_) {
-    norm_codes_ = new uint8_t[m_];
-    npq_ = std::unique_ptr<ProductQuantizer>( new ProductQuantizer(1, 1));
+    norm_codes_.resize(m_);
+    npq_ = std::make_unique<ProductQuantizer>(1, 1);
   }
   quantize(mat);
-}
-
-QMatrix::~QMatrix() {
-  if (codesize_ > 0) {
-    delete[] codes_;
-  }
-  if (qnorm_) { delete[] norm_codes_; }
 }
 
 void QMatrix::quantizeNorm(const Vector& norms) {
   assert(qnorm_);
   assert(norms.m_ == m_);
-  auto dataptr = norms.data_;
+  auto dataptr = &norms.data_[0];
   npq_->train(m_, dataptr);
-  npq_->compute_codes(dataptr, norm_codes_, m_);
+  npq_->compute_codes(dataptr, &norm_codes_[0], m_);
 }
 
 void QMatrix::quantize(const Matrix& matrix) {
@@ -56,9 +50,9 @@ void QMatrix::quantize(const Matrix& matrix) {
     temp.divideRow(norms);
     quantizeNorm(norms);
   }
-  auto dataptr = temp.data_;
+  auto dataptr = &temp.data_[0];
   pq_->train(m_, dataptr);
-  pq_->compute_codes(dataptr, codes_, m_);
+  pq_->compute_codes(dataptr, &codes_[0], m_);
 }
 
 void QMatrix::addToVector(Vector& x, int32_t t) const {
@@ -66,7 +60,7 @@ void QMatrix::addToVector(Vector& x, int32_t t) const {
   if (qnorm_) {
     norm = npq_->get_centroids(0, norm_codes_[t])[0];
   }
-  pq_->addcode(x, codes_, t, norm);
+  pq_->addcode(x, &codes_[0], t, norm);
 }
 
 real QMatrix::dotRow(const Vector& vec, int64_t i) const {
@@ -77,7 +71,7 @@ real QMatrix::dotRow(const Vector& vec, int64_t i) const {
   if (qnorm_) {
     norm = npq_->get_centroids(0, norm_codes_[i])[0];
   }
-  return pq_->mulcode(vec, codes_, i, norm);
+  return pq_->mulcode(vec, &codes_[0], i, norm);
 }
 
 int64_t QMatrix::getM() const {
@@ -93,10 +87,10 @@ void QMatrix::save(std::ostream& out) {
     out.write((char*) &m_, sizeof(m_));
     out.write((char*) &n_, sizeof(n_));
     out.write((char*) &codesize_, sizeof(codesize_));
-    out.write((char*) codes_, codesize_ * sizeof(uint8_t));
+    out.write((char*) &codes_[0], codesize_ * sizeof(uint8_t));
     pq_->save(out);
     if (qnorm_) {
-      out.write((char*) norm_codes_, m_ * sizeof(uint8_t));
+      out.write((char*) &norm_codes_[0], m_ * sizeof(uint8_t));
       npq_->save(out);
     }
 }
@@ -106,14 +100,14 @@ void QMatrix::load(std::istream& in) {
     in.read((char*) &m_, sizeof(m_));
     in.read((char*) &n_, sizeof(n_));
     in.read((char*) &codesize_, sizeof(codesize_));
-    codes_ = new uint8_t[codesize_];
-    in.read((char*) codes_, codesize_ * sizeof(uint8_t));
-    pq_ = std::unique_ptr<ProductQuantizer>( new ProductQuantizer());
+    codes_.resize(codesize_);
+    in.read((char*) &codes_[0], codesize_ * sizeof(uint8_t));
+    pq_ = std::make_unique<ProductQuantizer>();
     pq_->load(in);
     if (qnorm_) {
-      norm_codes_ = new uint8_t[m_];
-      in.read((char*) norm_codes_, m_ * sizeof(uint8_t));
-      npq_ = std::unique_ptr<ProductQuantizer>( new ProductQuantizer());
+      norm_codes_.resize(m_);
+      in.read((char*) &norm_codes_[0], m_ * sizeof(uint8_t));
+      npq_ = std::make_unique<ProductQuantizer>();
       npq_->load(in);
     }
 }

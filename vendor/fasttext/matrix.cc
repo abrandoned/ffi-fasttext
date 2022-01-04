@@ -21,34 +21,12 @@ namespace fasttext {
 Matrix::Matrix() {
   m_ = 0;
   n_ = 0;
-  data_ = nullptr;
 }
 
 Matrix::Matrix(int64_t m, int64_t n) {
   m_ = m;
   n_ = n;
-  data_ = new real[m * n];
-}
-
-Matrix::Matrix(const Matrix& other) {
-  m_ = other.m_;
-  n_ = other.n_;
-  data_ = new real[m_ * n_];
-  for (int64_t i = 0; i < (m_ * n_); i++) {
-    data_[i] = other.data_[i];
-  }
-}
-
-Matrix& Matrix::operator=(const Matrix& other) {
-  Matrix temp(other);
-  m_ = temp.m_;
-  n_ = temp.n_;
-  std::swap(data_, temp.data_);
-  return *this;
-}
-
-Matrix::~Matrix() {
-  delete[] data_;
+  data_.resize(m * n);
 }
 
 void Matrix::zero() {
@@ -130,15 +108,14 @@ void Matrix::l2NormRow(Vector& norms) const {
 void Matrix::save(std::ostream& out) {
   out.write((char*) &m_, sizeof(int64_t));
   out.write((char*) &n_, sizeof(int64_t));
-  out.write((char*) data_, m_ * n_ * sizeof(real));
+  out.write((char*) &data_[0], m_ * n_ * sizeof(real));
 }
 
 void Matrix::load(std::istream& in) {
   in.read((char*) &m_, sizeof(int64_t));
   in.read((char*) &n_, sizeof(int64_t));
-  delete[] data_;
-  data_ = new real[m_ * n_];
-  in.read((char*) data_, m_ * n_ * sizeof(real));
+  data_.resize(m_ * n_);
+  in.read((char*) &data_[0], m_ * n_ * sizeof(real));
 }
 
 }

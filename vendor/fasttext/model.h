@@ -49,8 +49,8 @@ class Model {
     int32_t osz_;
     real loss_;
     int64_t nexamples_;
-    real* t_sigmoid;
-    real* t_log;
+    std::vector<real> t_sigmoid;
+    std::vector<real> t_log;
     // used for negative sampling:
     std::vector<int32_t> negatives;
     size_t negpos;
@@ -71,7 +71,6 @@ class Model {
   public:
     Model(std::shared_ptr<Matrix>, std::shared_ptr<Matrix>,
           std::shared_ptr<Args>, int32_t);
-    ~Model();
 
     real binaryLogistic(int32_t, bool, real);
     real negativeSampling(int32_t, real);

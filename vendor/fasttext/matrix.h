@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <istream>
 #include <ostream>
+#include <vector>
 
 #include "real.h"
 
@@ -23,15 +24,14 @@ class Vector;
 class Matrix {
 
   public:
-    real* data_;
+    std::vector<real> data_;
     int64_t m_;
     int64_t n_;
 
     Matrix();
     Matrix(int64_t, int64_t);
-    Matrix(const Matrix&);
-    Matrix& operator=(const Matrix&);
-    ~Matrix();
+    Matrix(const Matrix&) = default;
+    Matrix& operator=(const Matrix&) = default;
 
     inline const real& at(int64_t i, int64_t j) const {return data_[i * n_ + j];};
     inline real& at(int64_t i, int64_t j) {return data_[i * n_ + j];};

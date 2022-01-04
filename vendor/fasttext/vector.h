@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <ostream>
+#include <vector>
 
 #include "real.h"
 
@@ -24,10 +25,14 @@ class Vector {
 
   public:
     int64_t m_;
-    real* data_;
+    std::vector<real> data_;
 
     explicit Vector(int64_t);
-    ~Vector();
+
+    Vector(const Vector&) = default;
+    Vector& operator = (const Vector&) = default;
+    Vector(Vector &&) = default;
+    Vector& operator = (Vector &&) = default;
 
     real& operator[](int64_t);
     const real& operator[](int64_t) const;

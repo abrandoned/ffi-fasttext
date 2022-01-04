@@ -21,11 +21,7 @@ namespace fasttext {
 
 Vector::Vector(int64_t m) {
   m_ = m;
-  data_ = new real[m];
-}
-
-Vector::~Vector() {
-  delete[] data_;
+  data_.resize(m);
 }
 
 int64_t Vector::size() const {

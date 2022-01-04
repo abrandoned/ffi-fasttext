@@ -31,8 +31,8 @@ class QMatrix {
     std::unique_ptr<ProductQuantizer> pq_;
     std::unique_ptr<ProductQuantizer> npq_;
 
-    uint8_t* codes_;
-    uint8_t* norm_codes_;
+    std::vector<uint8_t> codes_;
+    std::vector<uint8_t> norm_codes_;
 
     bool qnorm_;
 
@@ -45,7 +45,11 @@ class QMatrix {
 
     QMatrix();
     QMatrix(const Matrix&, int32_t, bool);
-    ~QMatrix();
+
+    QMatrix(const QMatrix &) = delete;
+    QMatrix& operator = (const QMatrix &) = delete;
+    QMatrix(QMatrix &&) = delete;
+    QMatrix& operator = (QMatrix &&) = delete;
 
     int64_t getM() const;
     int64_t getN() const;

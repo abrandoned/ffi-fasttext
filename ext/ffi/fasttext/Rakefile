@@ -48,18 +48,21 @@ task :compile_fasttext do
   CWD = ::File.expand_path(::File.dirname(__FILE__))
   FASTTEXT_DIR = ::File.join(CWD, "..", "..", "..", "vendor", "fasttext")
 
+  cppflags = "-c -O3 -fPIC -pthread -std=c++14"
+  defines = "-DNDEBUG"
+
   ::Dir.chdir(FASTTEXT_DIR) do
-    sys("g++ -c -O3 -fPIC -pthread -std=c++14 -c args.cc") unless ::File.exist?("args.o")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++14 -c dictionary.cc") unless ::File.exist?("dictionary.o")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++14 -c productquantizer.cc") unless ::File.exist?("productquantizer.o")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++14 -c matrix.cc") unless ::File.exist?("matrix.o")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++14 -c qmatrix.cc") unless ::File.exist?("qmatrix.o")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++14 -c vector.cc") unless ::File.exist?("vector.o")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++14 -c model.cc") unless ::File.exist?("model.o")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++14 -c utils.cc") unless ::File.exist?("utils.o")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++14 -c fasttext.cc") unless ::File.exist?("fasttext.o")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++14 -c ffi_fasttext.cc")
-    sys("g++ -c -O3 -fPIC -pthread -std=c++14 -c curlstream.cc")
+    sys("g++ #{cppflags} #{defines} -c args.cc") unless ::File.exist?("args.o")
+    sys("g++ #{cppflags} #{defines} -c dictionary.cc") unless ::File.exist?("dictionary.o")
+    sys("g++ #{cppflags} #{defines} -c productquantizer.cc") unless ::File.exist?("productquantizer.o")
+    sys("g++ #{cppflags} #{defines} -c matrix.cc") unless ::File.exist?("matrix.o")
+    sys("g++ #{cppflags} #{defines} -c qmatrix.cc") unless ::File.exist?("qmatrix.o")
+    sys("g++ #{cppflags} #{defines} -c vector.cc") unless ::File.exist?("vector.o")
+    sys("g++ #{cppflags} #{defines} -c model.cc") unless ::File.exist?("model.o")
+    sys("g++ #{cppflags} #{defines} -c utils.cc") unless ::File.exist?("utils.o")
+    sys("g++ #{cppflags} #{defines} -c fasttext.cc") unless ::File.exist?("fasttext.o")
+    sys("g++ #{cppflags} #{defines} -c ffi_fasttext.cc")
+    sys("g++ #{cppflags} #{defines} -c curlstream.cc")
     sys("g++ -fPIC -pthread -std=c++14 args.o dictionary.o productquantizer.o matrix.o qmatrix.o vector.o model.o utils.o fasttext.o main.cc -o fasttext") unless ::File.exist?("fasttext")
     sys("g++ -fPIC -pthread -std=c++14 args.o dictionary.o productquantizer.o matrix.o qmatrix.o vector.o model.o utils.o fasttext.o ffi_fasttext.o curlstream.o -lcurl -shared -o libfasttext.#{::FFI::Platform::LIBSUFFIX}")
   end

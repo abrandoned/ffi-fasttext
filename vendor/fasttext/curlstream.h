@@ -27,6 +27,8 @@ private:
   CURLM *m_multi_handle = nullptr;
   char m_buffer[CURL_MAX_WRITE_SIZE];
   size_t m_pos = 0, m_size = 0;
+  size_t m_total_buffer = 0;
+  size_t m_total_buffer_used = 0;
 };
 
 class CurlStream : private CurlStreambuff, public std::istream {

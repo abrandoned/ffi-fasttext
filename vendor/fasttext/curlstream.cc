@@ -3,6 +3,7 @@
 #include <thread>
 #include <streambuf>
 #include "./curlstream.h"
+#include <iostream>
 
 class curl_global_initializer {
 public:
@@ -44,6 +45,7 @@ CurlStreambuff::~CurlStreambuff()
   if (m_multi_handle) {
     curl_multi_cleanup(m_multi_handle);
   }
+  std::cout << "Buffer loaded: " << m_total_buffer << "\nBuffer used: " << m_total_buffer_used << "\n";
 }
 
 std::streamsize CurlStreambuff::xsgetn(char *s, std::streamsize n)
@@ -60,6 +62,7 @@ std::streamsize CurlStreambuff::xsgetn(char *s, std::streamsize n)
     s += to_copy;
     m_pos += to_copy;
     remaining -= to_copy;    
+    m_total_buffer_used += to_copy;
   }
   return n - remaining;
 }
@@ -81,6 +84,7 @@ int CurlStreambuff::uflow()
       return traits_type::eof();
     }
   }
+  m_total_buffer_used++;
   return traits_type::to_int_type(m_buffer[m_pos++]);
 }
 
@@ -94,6 +98,7 @@ int CurlStreambuff::writer_callback(char *data, size_t size, size_t count, void*
   memcpy(&self->m_buffer[0], data, bytes);
   self->m_size = bytes;
   self->m_pos = 0;
+  self->m_total_buffer += bytes;
   return bytes;
 }
 

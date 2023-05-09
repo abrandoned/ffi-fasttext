@@ -28,6 +28,8 @@ CurlStreambuff::CurlStreambuff(const std::string& url)
     curl_easy_setopt(m_http_handle, CURLOPT_WRITEFUNCTION, &CurlStreambuff::writer_callback);
     curl_easy_setopt(m_http_handle, CURLOPT_WRITEDATA, this);
 
+    curl_easy_setopt(m_http_handle, CURLOPT_VERBOSE, 1L);
+
     m_multi_handle = curl_multi_init();
     curl_multi_add_handle(m_multi_handle, m_http_handle);
   }

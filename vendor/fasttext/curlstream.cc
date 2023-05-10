@@ -37,7 +37,7 @@ CurlStreambuff::~CurlStreambuff()
 {
   if (m_multi_handle && m_http_handle) {
     curl_multi_remove_handle(m_multi_handle, m_http_handle);
-  } 
+  }
   if (m_http_handle) {
     curl_easy_cleanup(m_http_handle);
   }
@@ -59,7 +59,7 @@ std::streamsize CurlStreambuff::xsgetn(char *s, std::streamsize n)
     memcpy(s, &m_buffer[m_pos], to_copy);
     s += to_copy;
     m_pos += to_copy;
-    remaining -= to_copy;    
+    remaining -= to_copy;
   }
   return n - remaining;
 }
@@ -87,6 +87,15 @@ int CurlStreambuff::uflow()
 int CurlStreambuff::writer_callback(char *data, size_t size, size_t count, void* ptr)
 {
   auto self = static_cast<CurlStreambuff*>(ptr);
+
+  // This callback can be called multiple times with each curl_multi_perform call.
+  // To avoid multiple calls or rewriting with a vector buffer, we can tell curl to
+  // pause and unpause.
+  if (self->m_size > 0) {
+    self->m_curl_request_paused = true;
+    return CURL_WRITEFUNC_PAUSE;
+  }
+
   auto bytes = size * count;
   if(bytes > sizeof(m_buffer) || bytes == 0) {
     return 0;
@@ -101,6 +110,19 @@ size_t CurlStreambuff::fillbuffer()
 {
   using namespace std::chrono_literals;
   m_size = 0;
+
+  // Resume the paused curl request which will first fetch cached
+  // data before fetching new data from the socket. This prevents
+  // our buffer from being written to more than once per call to
+  // fillbuffer().
+  if (m_curl_request_paused) {
+    m_curl_request_paused = false;
+    auto mc = curl_easy_pause(m_http_handle, CURLPAUSE_CONT);
+    if (mc != CURLE_OK) {
+      return 0;
+    }
+  }
+
   int still_running_count = 1, repeats = 0;
   while (still_running_count > 0) {
     auto mc = curl_multi_perform(m_multi_handle, &still_running_count);
@@ -110,7 +132,7 @@ size_t CurlStreambuff::fillbuffer()
     if (m_size > 0) {
       break;
     }
-    /* wait for activity, timeout or "nothing" */ 
+    /* wait for activity, timeout or "nothing" */
     int numfds;
     mc = curl_multi_wait(m_multi_handle, nullptr, 0, 1000, &numfds);
     if(mc != CURLM_OK) {
@@ -120,7 +142,7 @@ size_t CurlStreambuff::fillbuffer()
     /* 'numfds' being zero means either a timeout or no file descriptors to
        wait for. Try timeout on first occurrence, then assume no file
        descriptors and no file descriptors to wait for means wait for 100
-       milliseconds. */ 
+       milliseconds. */
     if(numfds == 0) {
       if (++repeats > 1) {
         std::this_thread::sleep_for(100ms);
